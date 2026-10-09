@@ -6,6 +6,7 @@ import { store } from './core/store.js';
 import { createActions } from './core/actions.js';
 import { ApiClient } from './core/api.js';
 import { ModelLoader } from './core/ModelLoader.js';
+import { ViewsPersistence } from './core/ViewsPersistence.js';
 import { Viewer } from './viewer/Viewer.js';
 import { SectionBox } from './viewer/SectionBox.js';
 import { MeasureTool } from './viewer/MeasureTool.js';
@@ -34,19 +35,23 @@ async function main() {
   const ifc = new IfcManager({ viewer, store, bus, actions });
   const cad = new CadManager({ viewer, store, bus });
   cad.setElevationProvider(() => ifc.getBaseElevation());
+  // La caja de sección toma la caja de la selección IFC al activarse (ver Viewer.getSelectionBox)
+  viewer.setSelectionBoxProvider((items) => ifc.getBoxOf(items));
 
   const loader = new ModelLoader({ api, store, bus, ifc, cad, viewer });
   const sync = new SyncClient({ store, bus, info: { ...info, role } });
   const presentation = new Presentation({ sync, store, bus, viewer });
+  const viewsPersistence = new ViewsPersistence({ api, store, bus });
 
   const ctx = {
     bus, store, actions, api, info: { ...info, role },
-    viewer, section, measure, ifc, cad, loader, sync, presentation,
+    viewer, section, measure, ifc, cad, loader, sync, presentation, viewsPersistence,
   };
   mountUI(ctx);
 
   loader.start();
   sync.connect();
+  viewsPersistence.start();
 
   // Acceso para depuración y pruebas E2E
   window.__visor = ctx;

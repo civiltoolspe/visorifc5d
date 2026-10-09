@@ -1,0 +1,319 @@
+/* Visor IFC 5D - disposición de la aplicación: visor a pantalla completa y paneles flotantes. */
+
+#viewport {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-viewport);
+  overflow: hidden;
+  background: linear-gradient(180deg, #f3f3f2 0%, #e7e7e6 100%);
+}
+
+#viewport canvas {
+  display: block;
+}
+
+#ui-root {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-ui);
+  pointer-events: none;
+}
+
+/* Variables derivadas del estado de la UI (se escriben desde el store) */
+.ui {
+  position: absolute;
+  inset: 0;
+  --content-left: calc(var(--pad) + var(--sidebar-w) + 32px);
+  --dock-left: calc(var(--pad) + var(--sidebar-w) + var(--gap));
+  --dock-now: var(--dock-h);
+  font-family: var(--font);
+}
+
+.ui[data-sidebar='closed'] {
+  --content-left: calc(var(--pad) + 68px);
+  --dock-left: var(--pad);
+}
+
+.ui[data-dock='closed'] {
+  --dock-now: var(--dock-h-closed);
+}
+
+.ui > * {
+  pointer-events: auto;
+}
+
+.ui > .glow,
+.ui > .popover-layer,
+.ui > .toast-layer,
+.ui > .modal-layer {
+  pointer-events: none;
+}
+
+/* Resplandor naranja inferior (detrás del dock, sobre el visor) */
+.glow {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: calc(var(--dock-now) + 150px);
+  z-index: var(--z-glow);
+  background:
+    linear-gradient(
+      0deg,
+      var(--glow-orange) 0%,
+      rgba(255, 150, 40, 0.34) 24%,
+      var(--glow-yellow) 55%,
+      rgba(255, 194, 26, 0) 100%
+    );
+  opacity: 1;
+  transition: height var(--t-slow) var(--ease), opacity var(--t-slow) var(--ease);
+  -webkit-mask-image: linear-gradient(0deg, #000 0%, #000 55%, transparent 100%);
+  mask-image: linear-gradient(0deg, #000 0%, #000 55%, transparent 100%);
+}
+
+.ui[data-dock='closed'] .glow {
+  opacity: 0.7;
+}
+
+/* ------------------------------------------------------------ Barra lateral */
+.sidebar {
+  position: absolute;
+  z-index: var(--z-panel);
+  left: var(--pad);
+  top: var(--pad);
+  bottom: var(--pad);
+  width: var(--sidebar-w);
+  display: flex;
+  flex-direction: column;
+  transition: transform var(--t-slow) var(--ease), opacity var(--t) var(--ease);
+}
+
+.ui[data-sidebar='closed'] .sidebar {
+  transform: translateX(calc(-100% - var(--pad) - 24px));
+  opacity: 0;
+  pointer-events: none;
+}
+
+.sidebar-reopen {
+  position: absolute;
+  z-index: var(--z-panel);
+  left: var(--pad);
+  top: var(--pad);
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  border: 0;
+  border-radius: 16px;
+  background: transparent;
+  box-shadow: var(--shadow-card);
+  transform: scale(0.6);
+  opacity: 0;
+  pointer-events: none;
+  transition: transform var(--t) var(--ease), opacity var(--t) var(--ease);
+}
+
+.ui[data-sidebar='closed'] .sidebar-reopen {
+  transform: scale(1);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* ------------------------------------------------------------ Cabecera */
+.header {
+  position: absolute;
+  z-index: var(--z-panel);
+  top: calc(var(--pad) + 4px);
+  left: var(--content-left);
+  right: calc(var(--pad) + var(--toolbar-w) + 30px + var(--cluster-w, 0px));
+  min-width: 0;
+  pointer-events: none;
+  transition: left var(--t-slow) var(--ease);
+}
+
+.header > * {
+  pointer-events: auto;
+}
+
+/* ------------------------------------------------------------ Columna de herramientas (arriba a la derecha) */
+.toolbar-col {
+  position: absolute;
+  z-index: var(--z-panel);
+  top: var(--pad);
+  right: var(--pad);
+  width: var(--toolbar-w);
+  max-height: calc(100% - var(--dock-now) - 250px);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+}
+
+.toolbar-col > * {
+  pointer-events: auto;
+}
+
+/* ------------------------------------------------------------ Zoom */
+.zoom {
+  position: absolute;
+  z-index: var(--z-panel);
+  right: var(--pad);
+  bottom: calc(var(--dock-now) + 130px);
+  transition: bottom var(--t-slow) var(--ease);
+}
+
+/* ------------------------------------------------------------ Fila inferior: cruceta, nivel y selección */
+.bottom-row {
+  position: absolute;
+  z-index: var(--z-panel);
+  left: var(--content-left);
+  right: calc(var(--pad) + 64px);
+  bottom: calc(var(--dock-now) + 18px);
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  pointer-events: none;
+  transition: left var(--t-slow) var(--ease), bottom var(--t-slow) var(--ease);
+}
+
+.ui[data-sidebar='closed'] .bottom-row {
+  left: calc(var(--pad) + 8px);
+}
+
+.bottom-row > * {
+  pointer-events: auto;
+}
+
+.bottom-row .spacer {
+  flex: 1 1 0;
+  min-width: 0;
+  pointer-events: none;
+}
+
+.bottom-row .bottom-end {
+  display: flex;
+  align-items: flex-end;
+  gap: 14px;
+  flex: 0 1 auto;
+  min-width: 0;
+  pointer-events: none;
+}
+
+.bottom-row .bottom-end > * {
+  pointer-events: auto;
+}
+
+/* ------------------------------------------------------------ Dock inferior */
+.dock {
+  position: absolute;
+  z-index: var(--z-panel);
+  left: var(--dock-left);
+  right: var(--pad);
+  bottom: 0;
+  height: var(--dock-h);
+  display: grid;
+  grid-template-columns: minmax(0, 1.32fr) minmax(0, 1fr);
+  gap: var(--gap);
+  transition: transform var(--t-slow) var(--ease), left var(--t-slow) var(--ease);
+}
+
+.ui[data-dock='closed'] .dock {
+  transform: translateY(calc(100% - var(--dock-h-closed)));
+}
+
+/* ------------------------------------------------------------ Estado superior (presentación, conexión, pantalla completa) */
+.status-cluster {
+  position: absolute;
+  z-index: var(--z-panel);
+  top: var(--pad);
+  right: calc(var(--pad) + var(--toolbar-w) + 14px);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: calc(100% - var(--content-left) - var(--toolbar-w) - var(--pad) - 24px);
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+/* Con la capa de bloqueo activa, el estado (EN VIVO, pantalla completa) queda por encima de ella */
+.ui[data-locked='true'] .status-cluster {
+  z-index: var(--z-status);
+}
+
+/* ------------------------------------------------------------ Capas de utilidad */
+.popover-layer,
+.modal-layer,
+.toast-layer {
+  position: absolute;
+  inset: 0;
+}
+
+.popover-layer {
+  z-index: var(--z-popover);
+}
+
+.modal-layer {
+  z-index: var(--z-modal);
+}
+
+.toast-layer {
+  z-index: var(--z-toast);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding-top: var(--pad);
+}
+
+.drop-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: var(--z-drop);
+}
+
+.lock-layer {
+  position: absolute;
+  inset: 0;
+  z-index: var(--z-lock);
+  cursor: not-allowed;
+  background: transparent;
+  touch-action: none;
+}
+
+/* ------------------------------------------------------------ Adaptación a pantallas estrechas */
+@media (max-width: 1100px) {
+  .ui {
+    --content-left: calc(var(--pad) + 68px);
+    --dock-left: var(--pad);
+  }
+
+  /* La barra lateral pasa a ser un cajón que se superpone al visor */
+  .sidebar {
+    z-index: calc(var(--z-panel) + 5);
+    box-shadow: 0 40px 90px -20px rgba(30, 22, 14, 0.5), 0 10px 30px -10px rgba(30, 22, 14, 0.3);
+  }
+
+  .ui[data-sidebar='closed'] .sidebar {
+    box-shadow: none;
+  }
+
+  .bottom-row .bottom-end {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+}
+
+@media (max-width: 1000px) {
+  .header {
+    right: calc(var(--pad) + var(--cluster-w, 0px) + 20px);
+  }
+
+  .status-cluster {
+    right: var(--pad);
+    top: var(--pad);
+  }
+
+  .toolbar-col {
+    top: calc(var(--pad) + 54px);
+    max-height: calc(100% - var(--dock-now) - 300px);
+  }
+}

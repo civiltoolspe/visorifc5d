@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Visor IFC 5D">
+  <rect width="64" height="64" rx="16" fill="#FFC21A"/>
+  <rect x="12" y="11" width="22" height="26" rx="6" fill="#1B1B1B"/>
+  <rect x="30" y="27" width="22" height="26" rx="6" fill="#1B1B1B"/>
+  <rect x="30" y="27" width="4" height="10" fill="#FFC21A"/>
+  <circle cx="45" cy="19" r="4" fill="#FF6A13"/>
+</svg>

@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Visor IFC 5D (UI simulada)</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="stylesheet" href="/vendor/fonts/urbanist/300.css">
+  <link rel="stylesheet" href="/vendor/fonts/urbanist/400.css">
+  <link rel="stylesheet" href="/vendor/fonts/urbanist/500.css">
+  <link rel="stylesheet" href="/vendor/fonts/urbanist/600.css">
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/layout.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/sidebar.css">
+  <link rel="stylesheet" href="/css/hud.css">
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "/vendor/three/build/three.module.js",
+        "three/addons/": "/vendor/three/examples/jsm/",
+        "three-mesh-bvh": "/vendor/three-mesh-bvh/src/index.js",
+        "camera-controls": "/vendor/camera-controls/dist/camera-controls.module.js",
+        "web-ifc": "/vendor/web-ifc/web-ifc-api.js"
+      }
+    }
+  </script>
+</head>
+<body>
+  <div id="viewport" aria-label="Visor 3D (simulado)"></div>
+  <div id="ui-root"></div>
+  <div id="fatal-error" role="alert" hidden></div>
+  <!-- Contexto simulado: store/bus/actions reales; viewer/ifc/cad/loader/presentation/api de mentira -->
+  <script type="module" src="/dev/ui-mock.js"></script>
+</body>
+</html>

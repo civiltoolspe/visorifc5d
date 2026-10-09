@@ -68,8 +68,15 @@ export function createActions(store) {
       A.isolateElements(store.get('selection').items);
     },
 
+    // "Mostrar todo": quita ocultaciones, aislamientos y tipos ocultos y devuelve los modelos ocultos con el ojo de su tarjeta
     showAll() {
       store.patch('visibility', { hidden: {}, isolated: null, hiddenTypes: [] });
+      const models = store.get('models') || {};
+      if (Object.values(models).some((m) => m && m.visible === false)) {
+        const next = {};
+        for (const [id, m] of Object.entries(models)) next[id] = m && m.visible === false ? { ...m, visible: true } : m;
+        store.set('models', next);
+      }
     },
 
     setTypeHidden(type, hidden) {
