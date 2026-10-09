@@ -232,7 +232,7 @@ viewer.dispose()
 - `camera-controls` (instalar con `CameraControls.install({ THREE })`), con transiciones suaves.
 - Teclas de navegación las gestiona la UI (no el visor).
 
-### WorldOrigin.js
+### WorldOrigin.js (YA ESCRITO — usarlo tal cual)
 ```js
 new WorldOrigin(bus)
 wo.origin → { e, n, h } | null
@@ -397,7 +397,15 @@ presentation.setLaser(bool)
 - Sin presentación activa: si `viewerFreeNav` el espectador navega libremente (no puede subir/borrar
   modelos); si no, sigue bloqueado con el mensaje "Esperando al presentador".
 
-## 10. UI (`public/index.html`, `public/css/`, `public/js/ui/`)
+## 10. Eventos transversales del bus
+
+- `'toast'` `{ type: 'info'|'success'|'warning'|'error', message, timeout? }` → la UI muestra una notificación.
+- `'model:loaded'`, `'model:unloaded'`, `'model:error'` (ModelLoader).
+- `'origin:changed'` `{ delta, origin }` (WorldOrigin).
+- `'ifc:states-changed'` `{ modelId }` (IfcManager, tras recalcular estados; útil para la UI).
+- `'app:ready'` ctx (main.js).
+
+## 11. UI (`public/index.html`, `public/css/`, `public/js/ui/`)
 
 `mountUI(ctx)` con `ctx = { bus, store, actions, api, info, viewer, section, measure, ifc, cad, loader, sync, presentation }`.
 
