@@ -231,7 +231,7 @@ con `IfcSite` en UTM y el DXF con la huella del edificio, ejes y lote deben coin
 
 | Tecla       | Acción                                           |
 | ----------- | ------------------------------------------------ |
-| `Esc`       | Limpiar la selección / cancelar la medición      |
+| `Esc`       | Limpiar la selección / cancelar la medición (con el *Acerca de* abierto solo lo cierra) |
 | `H`         | Ocultar la selección                             |
 | `I`         | Aislar la selección                              |
 | `Shift + H` | Mostrar todo                                     |
@@ -299,6 +299,9 @@ npm run fixtures              # regenera los archivos de tests/fixtures (requier
   presentación con varios navegadores (presentador, espectador `?role=viewer` y espectador real por la IP de red).
   Las demás pruebas (`viewer`, `ifc`, `cad`, `sync`, `ui`) cubren cada módulo por separado con dobles de los otros.
   Las capturas quedan en `tests/output/` (ignorada por git).
+- `acerca.test.mjs` prueba el diálogo *Acerca de* con el servidor real: aperturas, datos del autor y licencias, ausencia de
+  datos no pedidos, Esc y foco, el espectador con la capa de bloqueo, que el estado local no llegue a los espectadores y el uso
+  de los valores por defecto con un `acerca.json` ausente o inválido (capturas `tests/output/acerca-*.png`).
 - `correcciones.test.mjs` reúne las pruebas de regresión de la ronda de verificación (georreferencia de `IfcSite`,
   espacios en el dock, vistas guardadas persistentes y vistas estándar) con el servidor y los módulos reales.
   `correcciones2.test.mjs` hace lo mismo con la ronda 2: PIN con la pantalla bloqueada, contadores del dock con modelos
@@ -326,7 +329,8 @@ server/                 Servidor Node (Express 5 + ws)
   net.js                direcciones de red y mensaje de arranque
 public/
   index.html            shell de la aplicación + import map
-  css/                  tokens.css, layout.css, components.css, sidebar.css, hud.css
+  config/acerca.json    datos del autor y de la aplicación para el diálogo Acerca de (editable)
+  css/                  tokens.css, layout.css, components.css, sidebar.css, hud.css, about.css
   js/
     main.js             arranque
     core/               events.js, store.js, actions.js, api.js, ModelLoader.js
@@ -373,3 +377,67 @@ cada elemento IFC se indexa por su `GlobalId` y el sistema de estados admite un 
   (indicadores de atraso, "listo para revisión", riesgo alto), con colores en el modelo.
 - **Paneles de la referencia de diseño**: progreso total, progreso por especialidad y "Planned progress /
   Installed" en el dock inferior.
+
+## Autor
+
+**Ing. Civil David Henry Bernilla Rodriguez** - Ingeniero Civil.
+Autor y desarrollador del Visor IFC 5D.
+
+Correo: [henrydavid.br.13@gmail.com](mailto:henrydavid.br.13@gmail.com)
+
+© 2026 Ing. Civil David Henry Bernilla Rodriguez
+
+Estos datos aparecen en el diálogo **Acerca de** del visor (botón con la `i` junto a *Pantalla completa*, arriba a la derecha,
+o clic en el logo de la barra lateral). Está disponible para todos los roles, también para los espectadores durante una
+presentación: no modifica el estado compartido ni la cámara y se abre y se cierra solo en esa PC.
+
+## Personalizar el Acerca de
+
+Los datos del autor y de la aplicación están en un archivo que puedes editar **sin programar**:
+[`public/config/acerca.json`](public/config/acerca.json) (JSON válido, UTF-8). Guarda el archivo y vuelve a abrir el
+*Acerca de*: el diálogo lo vuelve a leer del servidor cada vez que se abre, así que no hace falta reiniciar nada ni recargar la
+página (tampoco en las otras PCs).
+
+```json
+{
+  "autor": {
+    "titulo": "Ing. Civil",
+    "nombre": "David Henry Bernilla Rodriguez",
+    "profesion": "Ingeniero Civil",
+    "rol": "Autor y desarrollador del Visor IFC 5D",
+    "correo": "henrydavid.br.13@gmail.com"
+  },
+  "aplicacion": {
+    "nombre": "Visor IFC 5D",
+    "fase": "Fase 1 — Visor IFC/CAD georreferenciado y modo presentación",
+    "descripcion": "Visor BIM para seguimiento 5D de obras: ...",
+    "anio": 2026,
+    "hojaDeRuta": ["Fase 2: lectura de cronogramas MS Project (XML)", "..."]
+  }
+}
+```
+
+| Campo                    | Obligatorio | Descripción                                                                                           |
+| ------------------------ | ----------- | ----------------------------------------------------------------------------------------------------- |
+| `autor.nombre`           | sí          | Nombre completo. De él salen las iniciales del avatar (primer nombre y primer apellido: "DB").        |
+| `autor.titulo`           | no          | Título que precede al nombre ("Ing. Civil"); también aparece en el pie `© año título nombre`.         |
+| `autor.profesion`, `autor.rol` | no    | Líneas bajo el nombre.                                                                                |
+| `autor.correo`           | no          | Se muestra como enlace `mailto:` con un botón para copiarlo.                                          |
+| `autor.telefono`         | no          | Enlace `tel:`.                                                                                        |
+| `autor.colegiatura`, `autor.empresa`, `autor.ubicacion` | no | Texto sin enlace.                                                              |
+| `autor.web`, `autor.linkedin` | no     | Enlaces que abren en una pestaña nueva. Escribe la dirección completa con `https://`; solo se admiten `http` y `https`. |
+| `aplicacion.nombre`, `.fase`, `.descripcion` | no | Cabecera y texto de la sección *Aplicación*.                                               |
+| `aplicacion.anio`        | no          | Año del pie de página.                                                                                |
+| `aplicacion.hojaDeRuta`  | no          | Lista de textos para la sección *Hoja de ruta* (hasta 12). Una lista vacía oculta la sección.          |
+
+Reglas:
+
+- Un campo opcional ausente o vacío **no se muestra** (no se dibuja una fila vacía). Para agregar un dato basta con añadir la línea,
+  por ejemplo `"telefono": "+51 999 999 999"` dentro de `"autor"` (sin olvidar la coma de la línea anterior).
+- Si el archivo no existe, no es JSON válido o `autor.nombre` está vacío, el diálogo usa los valores por defecto (los de arriba,
+  embebidos en `public/js/ui/AboutDialog.js`) y no se rompe. En `aplicacion`, los campos que faltan toman su valor por defecto.
+- JSON no admite comentarios ni comas finales; los textos van entre comillas dobles y las comillas internas se escriben `\"`.
+  Para revisar el archivo: `node -e "JSON.parse(require('fs').readFileSync('public/config/acerca.json','utf8'))"`.
+- El archivo se sirve a todas las PCs de la red como cualquier otro de `public/`: no guardes datos privados en él.
+- La versión del encabezado sale de `package.json` (`GET /api/info`). La lista de tecnologías y licencias de terceros
+  (three.js, web-ifc, three-mesh-bvh, camera-controls, dxf-parser, LibreDWG, Express, ws, multer y Urbanist) está en `public/js/ui/AboutDialog.js`.

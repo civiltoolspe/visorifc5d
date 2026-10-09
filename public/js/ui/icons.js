@@ -134,6 +134,14 @@ const PATHS = {
   key: '<circle cx="8.2" cy="15.8" r="3.8"/><path d="M11 13l8.4-8.4"/><path d="M16 8l2.6 2.6"/><path d="M13.4 10.6l1.8 1.8"/>',
   keyboard:
     '<rect x="3" y="6" width="18" height="12" rx="3.2"/><path d="M7 10h.01"/><path d="M11 10h.01"/><path d="M15 10h.01"/><path d="M8 14h8"/>',
+  mail: '<rect x="3.5" y="5.5" width="17" height="13" rx="3.6"/><path d="M4.6 8.4l7.4 5 7.4-5"/>',
+  phone:
+    '<path d="M7.6 3.8h2.1l1.4 3.7-1.8 1.4a10.6 10.6 0 0 0 5.3 5.3l1.4-1.8 3.7 1.4v2.1a2.1 2.1 0 0 1-2.3 2.1A14.9 14.9 0 0 1 5.5 6.1a2.1 2.1 0 0 1 2.1-2.3z"/>',
+  'id-card':
+    '<rect x="3.5" y="5.5" width="17" height="13" rx="3.6"/><circle cx="9" cy="11" r="1.9"/><path d="M6.2 15.6a3.1 3.1 0 0 1 5.6 0"/>' +
+    '<path d="M14.2 10h3.4"/><path d="M14.2 13.4h3.4"/>',
+  external:
+    '<path d="M13.2 4.8h6v6"/><path d="M19.2 4.8l-8 8"/><path d="M17.4 14.4v2.3a2.6 2.6 0 0 1-2.6 2.6H7.3a2.6 2.6 0 0 1-2.6-2.6V9.2a2.6 2.6 0 0 1 2.6-2.6h2.3"/>',
 };
 
 const TEMPLATES = new Map();

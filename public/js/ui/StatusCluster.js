@@ -1,4 +1,4 @@
-// Grupo superior de estado: botón Presentar / insignia EN VIVO, conexión, carga y pantalla completa.
+// Grupo superior de estado: botón Presentar / insignia EN VIVO, conexión, carga, pantalla completa y Acerca de.
 // Estos controles quedan por encima de la capa de bloqueo (data-allow-locked).
 
 import { h, clear, setClass } from './dom.js';
@@ -35,6 +35,22 @@ export class StatusCluster extends Component {
       'data-allow-locked': '',
       on: { click: toggleFullscreen },
     });
+    // "Acerca de": inofensivo (no toca el store ni la cámara), así que sigue activo con la capa de bloqueo, como pantalla completa.
+    // Va después del botón de pantalla completa en el DOM (el primer .btn--glass del grupo es el de pantalla completa).
+    this.aboutBtn = h(
+      'button',
+      {
+        type: 'button',
+        class: 'btn btn--icon btn--glass about-btn',
+        title: 'Acerca de',
+        'aria-label': 'Acerca de',
+        'aria-haspopup': 'dialog',
+        'data-allow-locked': '',
+        on: { click: (e) => ui.about?.open(e.currentTarget) },
+      },
+      icon('info', { size: 18 }),
+    );
+    ui.about?.setTrigger(this.aboutBtn);
     // PIN de presentador para una PC remota. Con la capa de bloqueo ("Esperando al presentador", presentación en curso) la barra
     // lateral queda inerte y con ella el panel Conexión, así que el campo vive aquí, por encima de la capa (data-allow-locked).
     this.pinToggle = h(
@@ -91,7 +107,7 @@ export class StatusCluster extends Component {
     this.pinWrap = h('div', { class: 'pin-lock', hidden: true, 'data-allow-locked': '' }, this.pinToggle, this.pinForm);
     this.pinOpen = false;
 
-    this.el.append(this.loadChip, this.connChip, this.slot, this.pinWrap, this.fullBtn);
+    this.el.append(this.loadChip, this.connChip, this.slot, this.pinWrap, this.fullBtn, this.aboutBtn);
     ui.root.append(this.el);
 
     this.bar = h('div', { class: 'global-progress', hidden: true, role: 'progressbar', 'aria-label': 'Progreso de carga' }, h('span', { class: 'global-progress__fill' }));

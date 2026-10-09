@@ -1,0 +1,20 @@
+{
+  "autor": {
+    "titulo": "Ing. Civil",
+    "nombre": "David Henry Bernilla Rodriguez",
+    "profesion": "Ingeniero Civil",
+    "rol": "Autor y desarrollador del Visor IFC 5D",
+    "correo": "henrydavid.br.13@gmail.com"
+  },
+  "aplicacion": {
+    "nombre": "Visor IFC 5D",
+    "fase": "Fase 1 — Visor IFC/CAD georreferenciado y modo presentación",
+    "descripcion": "Visor BIM para seguimiento 5D de obras: modelos IFC, planos DXF/DWG georreferenciados y presentaciones en red local.",
+    "anio": 2026,
+    "hojaDeRuta": [
+      "Fase 2: lectura de cronogramas MS Project (XML)",
+      "Avance, costos y tiempo de ejecución por partida (4D/5D) vinculados por GlobalId",
+      "Curva S y reportes de avance"
+    ]
+  }
+}

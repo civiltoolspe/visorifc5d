@@ -80,6 +80,7 @@
   --z-drop: 80;
   --z-lock: 90;
   --z-status: 95;
+  --z-about: 100; /* "Acerca de": por encima de la capa de bloqueo y del estado */
 }
 
 @media (max-height: 780px) {

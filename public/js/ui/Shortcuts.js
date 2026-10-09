@@ -1,5 +1,5 @@
 // Atajos de teclado: Esc, H, I, Mayús+H, F, M, P (y "/" para buscar).
-// Se desactivan si hay capa de bloqueo, si el foco está en un campo de texto o si hay un modal.
+// Se desactivan si hay capa de bloqueo, si el foco está en un campo de texto o si hay un modal o el "Acerca de" abierto.
 
 import { Component } from './Component.js';
 import { isEditable, safe } from './dom.js';
@@ -15,6 +15,7 @@ export class Shortcuts extends Component {
   _onKeyDown(e) {
     if (e.defaultPrevented || e.isComposing) return;
     if (this.ui.isLocked()) return;
+    if (this.ui.about?.isOpen) return; // "Acerca de": Esc y las demás teclas no deben tocar el visor
     if (e.ctrlKey || e.metaKey || e.altKey) return;
 
     const inField = isEditable(e.target);

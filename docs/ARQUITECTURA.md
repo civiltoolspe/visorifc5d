@@ -64,7 +64,8 @@ server/                 Servidor Node (Express 5 + ws)
   index.js              arranque y cierre limpio (server.js, api.js, hub.js, roles.js, models.js, net.js, config.js)
 public/
   index.html            shell de la app + import map
-  css/                  tokens.css, layout.css, components.css, sidebar.css, hud.css
+  css/                  tokens.css, layout.css, components.css, sidebar.css, hud.css, about.css
+  config/acerca.json    datos del autor y de la aplicación para el diálogo Acerca de (editable; ver README)
   dev/                  sandboxes de cada módulo (viewer.html, ifc.html, cad.html, sync.html, ui-mock.html...)
   js/
     main.js             arranque (ya escrito)
@@ -79,7 +80,7 @@ tests/
   fixtures/             IFC/DXF georreferenciados de prueba + downloads/ (muestras reales)
   e2e/                  pruebas Playwright (*.test.mjs): una por módulo + app.test.mjs (flujo completo y
                         georreferencia numérica) + presentation.test.mjs (multi-cliente) + correcciones.test.mjs
-                        (regresiones de la ronda 1 de verificación)
+                        (regresiones de la ronda 1 de verificación) + acerca.test.mjs (diálogo Acerca de)
   run-all.mjs           ejecuta todas las pruebas (npm test)
 ```
 
@@ -482,6 +483,14 @@ para el estado activo, paneles inferiores en "vidrio" marrón/naranja):
 - **Presentación**: botón "Presentar" (presentador) con contador de espectadores, URL de red para
   copiar, toggle de puntero láser, "Tomar control". Para espectadores: insignia "EN VIVO · Siguiendo a
   {nombre}", capa de bloqueo que impide toda interacción (solo se permite pantalla completa).
+- **Acerca de** (`AboutDialog.js`, `css/about.css`): diálogo modal con el logo, la fase y la versión (`ctx.info.version`), la tarjeta del autor
+  (avatar con iniciales, correo con `mailto:` y botón copiar; filas opcionales de teléfono, colegiatura, empresa, ubicación, web y LinkedIn solo
+  si el JSON las trae), la descripción, el rol de esta PC y las URL de red (`store.presentation.lanUrls`), la hoja de ruta y las tecnologías con su
+  licencia. Los datos salen de `public/config/acerca.json` (se vuelve a leer en cada apertura; si falta o es inválido se usan los valores por
+  defecto embebidos en el módulo). Se abre con el botón `i` junto a pantalla completa (`StatusCluster`, `data-allow-locked`: también para el
+  espectador con la capa de bloqueo) o con el logo de la barra lateral. Su estado abierto/cerrado es **local** (`ui.about.isOpen`, nunca un slice
+  sincronizado): abrirlo no cambia nada en los espectadores. Va por encima de la capa de bloqueo (`--z-about`), Esc solo lo cierra (su oyente de
+  teclado se registra antes que el de `Shortcuts`, que además se desactiva mientras está abierto), atrapa el foco y lo devuelve al botón que lo abrió.
 - Toasts, diálogo de georreferencia manual (E, N, H, rotación, escala), atajos de teclado:
   Esc (limpiar selección / cancelar medición), H (ocultar selección), I (aislar), Shift+H (mostrar todo),
   F (encuadrar selección o todo), M (medir), P (presentar).
@@ -589,7 +598,9 @@ Resumen de lo verificado de punta a punta con el servidor real (`tests/e2e/app.t
   `visibility.hidden` con `store.patch`.
 - Tras `api.patchModel` / `api.deleteModel` la UI llama a `loader.reconcile` sin esperar la difusión `models`.
 - `LockLayer` (data-lock-layer) cubre toda la ventana y bloquea puntero, rueda y teclado; solo los elementos con
-  `data-allow-locked` (pantalla completa, EN VIVO, Detener / Tomar control) siguen activos.
+  `data-allow-locked` (pantalla completa, Acerca de, EN VIVO, Detener / Tomar control) siguen activos. El diálogo *Acerca de* (`AboutDialog`)
+  se monta en `ui.root` con `data-allow-locked` y `--z-about` (100, por encima de la capa y del grupo de estado): el espectador lo abre y lo cierra
+  como la pantalla completa y, al cerrarse, la capa sigue bloqueando todo lo demás. No se registra en `ui.modals` (LockLayer los cierra al bloquear).
 - Panel *Conexión*: nombre del equipo y, si el servidor exige PIN, campo "PIN de presentador" (comprueba el PIN con
   `GET /api/info`, y si el rol pasa a `presenter` recarga la página). La comprobación es `enterWithPin(ui, pin)` (`ui/Panels.js`).
   Con la capa de bloqueo la barra lateral queda inerte y el panel es inalcanzable, así que `StatusCluster` incluye
@@ -598,7 +609,7 @@ Resumen de lo verificado de punta a punta con el servidor real (`tests/e2e/app.t
 - `store.views.items` no guarda la fecha de creación.
 
 ### 12.8 Pruebas
-- `npm test` ejecuta en serie `app`, `cad`, `correcciones`, `correcciones2`, `ifc`, `presentation`, `server`, `sync`, `ui` y `viewer`. Las pruebas de
+- `npm test` ejecuta en serie `acerca`, `app`, `cad`, `correcciones`, `correcciones2`, `ifc`, `presentation`, `server`, `sync`, `ui` y `viewer`. Las pruebas de
   módulo usan dobles de los demás módulos; `app` y `presentation` usan el servidor real y todos los módulos reales.
 - `app.test.mjs` verifica numéricamente la georreferencia: cajas de los dos IFC (≤ 2 cm), huella de la capa MUROS del DXF
   contra los muros IFC y contra las esquinas de `fixtures.json` (≤ 2 cm), y cota automática del DXF = nivel más bajo + 0,02 m.

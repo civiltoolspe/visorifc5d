@@ -14,6 +14,7 @@ export class UiContext {
     this.popovers = new Set();
     this.modals = new Set();
     this.dialogs = null; // lo asigna App.js
+    this.about = null; // diálogo "Acerca de" (AboutDialog); lo asigna App.js. Su estado abierto/cerrado es local, no del store
   }
 
   // ---------- Rol y bloqueo ----------
@@ -65,7 +66,7 @@ export class UiContext {
   }
 
   hasOverlay() {
-    if (this.modals.size) return true;
+    if (this.modals.size || this.about?.isOpen) return true;
     for (const p of this.popovers) if (p.isOpen) return true;
     return false;
   }

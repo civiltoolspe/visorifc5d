@@ -11,6 +11,7 @@ import { h } from './dom.js';
 import { logo } from './icons.js';
 import { UiContext } from './UiContext.js';
 import { Dialogs } from './Dialogs.js';
+import { AboutDialog } from './AboutDialog.js';
 import { Toasts } from './Toasts.js';
 import { Header } from './Header.js';
 import { Toolbar } from './Toolbar.js';
@@ -55,6 +56,9 @@ export function mountUI(ctx) {
     components.push(c);
     return c;
   };
+
+  // "Acerca de": se crea antes que Shortcuts y LockLayer para que su Esc se resuelva primero (solo cierra el diálogo)
+  ui.about = add(new AboutDialog(ui));
 
   // ---- Paneles emergentes de la barra lateral
   const presentationPanel = add(new PresentationPanel(ui));

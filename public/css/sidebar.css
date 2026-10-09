@@ -21,9 +21,23 @@
 .sidebar__logo {
   display: block;
   flex: none;
+  padding: 0;
+  border: 0;
+  background: transparent;
   line-height: 0;
   border-radius: 14px;
   box-shadow: 0 10px 20px -10px rgba(255, 170, 0, 0.7);
+  cursor: pointer;
+  transition: transform var(--t) var(--ease), box-shadow var(--t) var(--ease);
+}
+
+.sidebar__logo:hover {
+  transform: translateY(-1px) scale(1.04);
+  box-shadow: 0 14px 24px -10px rgba(255, 170, 0, 0.85);
+}
+
+.sidebar__logo:active {
+  transform: scale(0.97);
 }
 
 .sidebar__icons {

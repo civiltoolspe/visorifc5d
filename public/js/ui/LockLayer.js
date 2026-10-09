@@ -5,7 +5,7 @@
 //   - presentador que no es el activo mientras otro presenta.
 // Es transparente, cubre toda la ventana, captura los eventos de puntero, rueda y teclado y
 // muestra el cursor "not-allowed". Solo los elementos marcados con data-allow-locked (botón de
-// pantalla completa, insignia EN VIVO...) quedan por encima.
+// pantalla completa, botón y diálogo "Acerca de", insignia EN VIVO...) quedan por encima.
 
 import { h } from './dom.js';
 import { Component } from './Component.js';

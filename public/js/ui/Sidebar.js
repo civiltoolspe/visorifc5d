@@ -39,10 +39,17 @@ export class Sidebar extends Component {
     this.connBtn.append(this.connDot);
     this.collapseBtn = h('button', { type: 'button', class: 'btn btn--icon btn--bare sidebar__icon', title: 'Ocultar la barra lateral', 'aria-label': 'Ocultar la barra lateral', on: { click: () => this.actions.toggleSidebar(false) } }, icon('panel-close', { size: 18 }));
 
+    // El logo abre el "Acerca de" (diálogo local: no cambia el store)
+    this.logoBtn = h(
+      'button',
+      { type: 'button', class: 'sidebar__logo', title: 'Acerca de Visor IFC 5D', 'aria-label': 'Acerca de Visor IFC 5D', 'aria-haspopup': 'dialog', on: { click: (e) => ui.about?.open(e.currentTarget) } },
+      logo({ size: 44 }),
+    );
+
     this.head = h(
       'div',
       { class: 'sidebar__head' },
-      h('div', { class: 'sidebar__row' }, h('span', { class: 'sidebar__logo', title: 'Visor IFC 5D' }, logo({ size: 44 })), this.search.el, h('div', { class: 'sidebar__icons' }, this.presentBtn, this.connBtn, this.settingsBtn, this.collapseBtn)),
+      h('div', { class: 'sidebar__row' }, this.logoBtn, this.search.el, h('div', { class: 'sidebar__icons' }, this.presentBtn, this.connBtn, this.settingsBtn, this.collapseBtn)),
       this.search.panel,
     );
 
