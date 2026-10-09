@@ -1,0 +1,32 @@
+{
+  "name": "visorifc5d",
+  "version": "0.1.0",
+  "description": "Visor IFC 5D (fase 1): visor IFC + DXF/DWG georreferenciado con modo presentación en red local",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "node --watch server/index.js",
+    "fixtures": "python3 tests/fixtures/generate_fixtures.py",
+    "test": "node tests/run-all.mjs",
+    "test:e2e": "node tests/run-all.mjs"
+  },
+  "dependencies": {
+    "@fontsource/urbanist": "5.3.0",
+    "@mlightcad/libredwg-web": "0.7.16",
+    "camera-controls": "3.1.2",
+    "dxf-parser": "1.1.2",
+    "express": "5.3.0",
+    "multer": "2.4.0",
+    "three": "0.186.1",
+    "three-mesh-bvh": "0.9.16",
+    "web-ifc": "0.0.78",
+    "ws": "8.22.0"
+  },
+  "devDependencies": {
+    "playwright": "1.56.1"
+  }
+}

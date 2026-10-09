@@ -1,0 +1,43 @@
+{
+  "crs": "EPSG:32718",
+  "eastings": 279500.0,
+  "northings": 8661000.0,
+  "orthogonalHeight": 150.0,
+  "rotationDeg": 15.0,
+  "buildingLocalSize": [
+    12.0,
+    8.0
+  ],
+  "buildingCornersMap": {
+    "origen": [
+      279500.0,
+      8661000.0,
+      150.0
+    ],
+    "esq_x": [
+      279511.59110991546,
+      8661003.10582854,
+      150.0
+    ],
+    "esq_xy": [
+      279509.5205575546,
+      8661010.83323515,
+      150.0
+    ],
+    "esq_y": [
+      279497.92944763915,
+      8661007.72740661,
+      150.0
+    ]
+  },
+  "elementsPerStorey": {
+    "Nivel 1": 10,
+    "Nivel 2": 10
+  },
+  "files": [
+    "edificio_georef_ifc4.ifc",
+    "edificio_site_ifc2x3.ifc",
+    "planta_georef.dxf"
+  ],
+  "note": "Los vértices de la huella del DXF (capa MUROS) coinciden con las esquinas exteriores de los muros IFC."
+}
