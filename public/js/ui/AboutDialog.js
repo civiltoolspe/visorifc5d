@@ -8,7 +8,10 @@
 //     queda por encima de la capa de bloqueo, igual que el botón de pantalla completa. Al cerrarse, la
 //     capa sigue bloqueando todo lo demás.
 //   - Esc cierra solo el diálogo (su oyente se registra antes que el de los atajos y los detiene), el
-//     foco queda atrapado dentro mientras está abierto y vuelve al botón que lo abrió.
+//     foco queda atrapado dentro mientras está abierto y vuelve al botón que lo abrió. Si Esc se mantiene
+//     pulsado, las repeticiones que llegan después del cierre también se detienen (no limpian la selección).
+//   - acerca.json se vuelve a leer en cada apertura, salvo que no exista (404): entonces se usan los valores
+//     por defecto y no se vuelve a pedir hasta recargar la página (evita un error de consola por apertura).
 
 import { h, copyText, setText } from './dom.js';
 import { icon, logo } from './icons.js';
@@ -105,16 +108,22 @@ function normalizarAutor(raw, porDefecto) {
   return autor;
 }
 
+// Texto de un campo opcional: un texto (o un número) se respeta aunque quede vacío, y entonces no se muestra;
+// cualquier otro tipo (objeto, lista, null, booleano) no es un texto válido y toma el valor por defecto.
+function textoOPorDefecto(valor, max, porDefecto) {
+  const esTexto = typeof valor === 'string' || (typeof valor === 'number' && Number.isFinite(valor));
+  return esTexto ? limpiar(valor, max) : porDefecto;
+}
+
 function normalizarAplicacion(raw, porDefecto) {
   if (!esObjeto(raw)) return porDefecto;
-  const tiene = (k) => Object.prototype.hasOwnProperty.call(raw, k);
   const anio = Number(raw.anio);
-  let hojaDeRuta = porDefecto.hojaDeRuta;
-  if (tiene('hojaDeRuta')) hojaDeRuta = Array.isArray(raw.hojaDeRuta) ? raw.hojaDeRuta.map((x) => limpiar(x, 200)).filter(Boolean).slice(0, 12) : [];
+  // Una lista (aunque esté vacía: oculta la sección) se respeta; si no es una lista se usa la de por defecto
+  const hojaDeRuta = Array.isArray(raw.hojaDeRuta) ? raw.hojaDeRuta.map((x) => limpiar(x, 200)).filter(Boolean).slice(0, 12) : porDefecto.hojaDeRuta;
   return {
     nombre: limpiar(raw.nombre, 80) || porDefecto.nombre,
-    fase: tiene('fase') ? limpiar(raw.fase, 160) : porDefecto.fase,
-    descripcion: tiene('descripcion') ? limpiar(raw.descripcion, 500) : porDefecto.descripcion,
+    fase: textoOPorDefecto(raw.fase, 160, porDefecto.fase),
+    descripcion: textoOPorDefecto(raw.descripcion, 500, porDefecto.descripcion),
     anio: Number.isInteger(anio) && anio >= 1900 && anio <= 2999 ? anio : porDefecto.anio,
     hojaDeRuta,
   };
@@ -128,19 +137,25 @@ export function normalizarAcerca(raw) {
   return { autor: normalizarAutor(raw.autor, def.autor), aplicacion: normalizarAplicacion(raw.aplicacion, def.aplicacion) };
 }
 
-// Lee /config/acerca.json. Devuelve null si falta, no se puede leer o no es JSON válido.
+// Lee /config/acerca.json. Devuelve { datos, ausente }:
+//   datos  - los datos normalizados, o null si falta, no se puede leer o no es JSON válido
+//   ausente - true solo si el servidor respondió 404/410 (el archivo no existe)
 async function cargarAcerca() {
   try {
     const opciones = { cache: 'no-store', headers: { Accept: 'application/json' } };
     if (typeof AbortSignal !== 'undefined' && AbortSignal.timeout) opciones.signal = AbortSignal.timeout(8000);
     const res = await fetch(ACERCA_URL, opciones);
+    if (res.status === 404 || res.status === 410) {
+      console.warn('[acerca] no existe', ACERCA_URL, '- se usan los datos por defecto');
+      return { datos: null, ausente: true };
+    }
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const raw = await res.json();
     if (!esObjeto(raw)) throw new Error('el JSON debe ser un objeto');
-    return normalizarAcerca(raw);
+    return { datos: normalizarAcerca(raw), ausente: false };
   } catch (err) {
     console.warn('[acerca] se usan los datos por defecto:', err?.message || err);
-    return null;
+    return { datos: null, ausente: false };
   }
 }
 
@@ -191,7 +206,9 @@ export class AboutDialog extends Component {
     super(ui);
     this.data = copiaPorDefecto();
     this._clave = JSON.stringify(this.data);
-    this._seq = 0;
+    this._enCurso = null; // lectura de acerca.json en marcha (una sola a la vez)
+    this._ausente = false; // el servidor respondió 404: no se vuelve a pedir hasta recargar la página
+    this._escCerrado = false; // Esc cerró el diálogo y la tecla sigue pulsada: se tragan sus repeticiones
     this.el = null; // contenedor (fondo) mientras el diálogo está abierto
     this.card = null;
     this.opener = null;
@@ -201,6 +218,9 @@ export class AboutDialog extends Component {
     // Esc y Tab: el oyente se registra antes que los de Shortcuts y LockLayer (App.js construye este
     // componente primero), de modo que Esc cierra solo el diálogo y no llega a limpiar la selección.
     this.listen(window, 'keydown', (e) => this._onKey(e), true);
+    this.listen(window, 'keyup', (e) => {
+      if (e.key === 'Escape') this._escCerrado = false;
+    }, true);
     this.watch('presentation'); // rol y URLs de red
     this.recargar(); // precarga: la primera apertura ya muestra los datos del archivo
   }
@@ -215,16 +235,25 @@ export class AboutDialog extends Component {
   }
 
   // Vuelve a leer acerca.json (así los cambios del archivo se ven sin recargar la página) y, si cambió
-  // algo con el diálogo abierto, lo redibuja.
-  async recargar() {
-    const seq = ++this._seq;
-    const siguiente = (await cargarAcerca()) || copiaPorDefecto();
-    if (this._disposed || seq !== this._seq) return;
-    const clave = JSON.stringify(siguiente);
-    if (clave === this._clave) return;
-    this.data = siguiente;
-    this._clave = clave;
-    if (this.isOpen) this._pintarTodo();
+  // algo con el diálogo abierto, lo redibuja. Si ya hay una lectura en marcha se une a ella, y si el
+  // archivo no existe (404) no lo vuelve a pedir: cada intento fallido deja un error en la consola.
+  recargar() {
+    if (this._ausente || this._disposed) return Promise.resolve();
+    if (!this._enCurso) {
+      this._enCurso = cargarAcerca()
+        .then(({ datos, ausente }) => {
+          this._enCurso = null;
+          if (ausente) this._ausente = true;
+          if (this._disposed) return;
+          const siguiente = datos || copiaPorDefecto();
+          const clave = JSON.stringify(siguiente);
+          if (clave === this._clave) return;
+          this.data = siguiente;
+          this._clave = clave;
+          if (this.isOpen) this._pintarTodo();
+        });
+    }
+    return this._enCurso;
   }
 
   open(opener = null) {
@@ -266,10 +295,23 @@ export class AboutDialog extends Component {
   // ---------------------------------------------------------------- teclado y foco
 
   _onKey(e) {
-    if (!this.isOpen) return;
+    if (!this.isOpen) {
+      // Esc cerró el diálogo y sigue pulsado: las repeticiones del teclado no deben llegar a los atajos
+      // (limpiarían la selección). Una pulsación nueva (repeat = false) vuelve a funcionar con normalidad.
+      if (this._escCerrado && e.key === 'Escape') {
+        if (e.repeat) {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+        } else {
+          this._escCerrado = false;
+        }
+      }
+      return;
+    }
     if (e.key === 'Escape') {
       e.preventDefault();
       e.stopImmediatePropagation();
+      this._escCerrado = true;
       this.close();
     } else if (e.key === 'Tab') {
       this._atraparTab(e);

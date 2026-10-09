@@ -487,10 +487,12 @@ para el estado activo, paneles inferiores en "vidrio" marrón/naranja):
   (avatar con iniciales, correo con `mailto:` y botón copiar; filas opcionales de teléfono, colegiatura, empresa, ubicación, web y LinkedIn solo
   si el JSON las trae), la descripción, el rol de esta PC y las URL de red (`store.presentation.lanUrls`), la hoja de ruta y las tecnologías con su
   licencia. Los datos salen de `public/config/acerca.json` (se vuelve a leer en cada apertura; si falta o es inválido se usan los valores por
-  defecto embebidos en el módulo). Se abre con el botón `i` junto a pantalla completa (`StatusCluster`, `data-allow-locked`: también para el
+  defecto embebidos en el módulo, y un campo de `aplicacion` con un tipo inesperado toma también su valor por defecto; si el servidor responde
+  404 no se vuelve a pedir hasta recargar la página). Se abre con el botón `i` junto a pantalla completa (`StatusCluster`, `data-allow-locked`: también para el
   espectador con la capa de bloqueo) o con el logo de la barra lateral. Su estado abierto/cerrado es **local** (`ui.about.isOpen`, nunca un slice
   sincronizado): abrirlo no cambia nada en los espectadores. Va por encima de la capa de bloqueo (`--z-about`), Esc solo lo cierra (su oyente de
-  teclado se registra antes que el de `Shortcuts`, que además se desactiva mientras está abierto), atrapa el foco y lo devuelve al botón que lo abrió.
+  teclado se registra antes que el de `Shortcuts`, que además se desactiva mientras está abierto; si Esc se mantiene pulsado, las repeticiones
+  posteriores al cierre también se detienen hasta soltar la tecla), atrapa el foco y lo devuelve al botón que lo abrió.
 - Toasts, diálogo de georreferencia manual (E, N, H, rotación, escala), atajos de teclado:
   Esc (limpiar selección / cancelar medición), H (ocultar selección), I (aislar), Shift+H (mostrar todo),
   F (encuadrar selección o todo), M (medir), P (presentar).

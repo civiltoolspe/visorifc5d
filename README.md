@@ -426,16 +426,21 @@ página (tampoco en las otras PCs).
 | `autor.telefono`         | no          | Enlace `tel:`.                                                                                        |
 | `autor.colegiatura`, `autor.empresa`, `autor.ubicacion` | no | Texto sin enlace.                                                              |
 | `autor.web`, `autor.linkedin` | no     | Enlaces que abren en una pestaña nueva. Escribe la dirección completa con `https://`; solo se admiten `http` y `https`. |
-| `aplicacion.nombre`, `.fase`, `.descripcion` | no | Cabecera y texto de la sección *Aplicación*.                                               |
+| `aplicacion.nombre`, `.fase`, `.descripcion` | no | Cabecera y texto de la sección *Aplicación*. `""` en `fase` o `descripcion` oculta ese texto.  |
 | `aplicacion.anio`        | no          | Año del pie de página.                                                                                |
-| `aplicacion.hojaDeRuta`  | no          | Lista de textos para la sección *Hoja de ruta* (hasta 12). Una lista vacía oculta la sección.          |
+| `aplicacion.hojaDeRuta`  | no          | Lista de textos para la sección *Hoja de ruta* (hasta 12). Una lista vacía `[]` oculta la sección.     |
 
 Reglas:
 
 - Un campo opcional ausente o vacío **no se muestra** (no se dibuja una fila vacía). Para agregar un dato basta con añadir la línea,
   por ejemplo `"telefono": "+51 999 999 999"` dentro de `"autor"` (sin olvidar la coma de la línea anterior).
 - Si el archivo no existe, no es JSON válido o `autor.nombre` está vacío, el diálogo usa los valores por defecto (los de arriba,
-  embebidos en `public/js/ui/AboutDialog.js`) y no se rompe. En `aplicacion`, los campos que faltan toman su valor por defecto.
+  embebidos en `public/js/ui/AboutDialog.js`) y no se rompe. En `aplicacion`, los campos que faltan, o que no tienen el tipo
+  esperado (por ejemplo una `hojaDeRuta` que no es una lista, o una `fase` que no es texto), toman su valor por defecto; para ocultar
+  la hoja de ruta escribe `"hojaDeRuta": []`.
+- Si el archivo no existe (404) el visor lo pide una sola vez por carga de página y usa los valores por defecto (el navegador anota
+  ese 404 en su consola, es normal). Si luego lo creas, recarga la página. Si existe pero tiene un error de escritura, se vuelve a leer
+  cada vez que abres el *Acerca de*, así que basta con corregirlo y reabrir.
 - JSON no admite comentarios ni comas finales; los textos van entre comillas dobles y las comillas internas se escriben `\"`.
   Para revisar el archivo: `node -e "JSON.parse(require('fs').readFileSync('public/config/acerca.json','utf8'))"`.
 - El archivo se sirve a todas las PCs de la red como cualquier otro de `public/`: no guardes datos privados en él.

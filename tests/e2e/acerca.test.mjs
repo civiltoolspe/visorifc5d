@@ -7,9 +7,11 @@
 // versión de /api/info, licencias (MPL-2.0, GPL-3.0...); que NO haya GitHub ni filas de teléfono/colegiatura/etc.; Esc, foco
 // atrapado y devuelto al botón; Esc sin limpiar la selección y sin atajos; diseño a 1600, 900 y 390 px; el espectador con la
 // capa de bloqueo (abre y cierra el diálogo y el resto sigue bloqueado); que abrirlo en el presentador no cambie nada en el
-// espectador ni envíe mensajes de sincronización; y acerca.json ausente, inválido o personalizado (se intercepta con page.route).
+// espectador ni envíe mensajes de sincronización; Esc mantenido pulsado (las repeticiones no limpian la selección); y acerca.json
+// ausente, inválido o personalizado (se intercepta con page.route), con los valores por defecto cuando un campo no tiene el tipo
+// esperado y sin reintentos (ni errores repetidos de consola) cuando el archivo no existe.
 //
-// Uso: node tests/e2e/acerca.test.mjs   (ACERCA_TEST_PORT cambia el puerto; 8400 por defecto)
+// Uso: node tests/e2e/acerca.test.mjs   (ACERCA_TEST_PORT cambia el puerto; 8440 por defecto)
 
 import path from 'node:path';
 import fs from 'node:fs';
@@ -17,7 +19,7 @@ import {
   startServer, launchBrowser, openPage, uploadFixture, assert, waitFor, getSlice, waitForApp, waitCameraSettled, OUTPUT, ROOT,
 } from './helpers.mjs';
 
-const PORT = Number(process.env.ACERCA_TEST_PORT || 8400);
+const PORT = Number(process.env.ACERCA_TEST_PORT || 8440);
 
 const results = [];
 const handles = []; // contextos abiertos { context, errors, name }
@@ -79,17 +81,28 @@ function hit(page, x, y) {
 
 const center = (box) => ({ x: Math.round(box.x + box.width / 2), y: Math.round(box.y + box.height / 2) });
 
-// Abre una página con una respuesta simulada para /config/acerca.json (la ruta se instala ANTES de cargar la aplicación)
+// Abre una página con una respuesta simulada para /config/acerca.json (la ruta se instala ANTES de cargar la aplicación).
+// Devuelve además `peticiones()` (cuántas veces se pidió el archivo) y `erroresDelArchivo()` (errores de consola que el navegador
+// atribuye a esa URL: el "Failed to load resource" de un 404).
 async function openWithAcerca(browser, url, respond) {
   const context = await browser.newContext({ viewport: { width: 1600, height: 900 } });
   const page = await context.newPage();
   const errors = [];
+  let pedidas = 0;
   page.on('pageerror', (e) => errors.push(`pageerror: ${e.message}`));
-  page.on('console', (m) => { if (m.type() === 'error') errors.push(`console: ${m.text()}`); });
-  if (respond) await page.route('**/config/acerca.json', respond);
+  page.on('console', (m) => { if (m.type() === 'error') errors.push(`console: ${m.text()} @ ${m.location()?.url || '?'}`); });
+  await page.route('**/config/acerca.json', (route, req) => {
+    pedidas++;
+    return respond ? respond(route, req) : route.continue();
+  });
   await page.goto(url);
   await page.waitForFunction(() => document.documentElement.dataset.ready === 'true', null, { timeout: 30000 });
-  return { context, page, errors };
+  return {
+    context, page, errors,
+    peticiones: () => pedidas,
+    erroresDelArchivo: () => errors.filter((e) => e.includes('/config/acerca.json')),
+    otrosErrores: () => errors.filter((e) => !e.includes('/config/acerca.json')),
+  };
 }
 
 async function openAbout(page) {
@@ -334,6 +347,45 @@ async function run() {
       await page.evaluate(() => window.__visor.actions.setMeasureActive(false));
     });
 
+    await test('Esc mantenido pulsado: las repeticiones posteriores al cierre no limpian la selección', async () => {
+      const { page } = P;
+      await page.evaluate(() => {
+        const m = window.__visor.ifc.getModels()[0];
+        window.__visor.actions.select([{ modelId: m.id, expressId: m.table.expressIds[0] }]);
+      });
+      assert((await getSlice(page, 'selection')).items.length === 1, 'hay una selección de partida');
+      await waitCameraSettled(page);
+
+      await page.locator(ABOUT_BTN).focus();
+      await page.keyboard.press('Enter');
+      await waitDialog(page);
+      // Un solo Esc que se mantiene pulsado: Playwright marca las repeticiones con repeat=true, igual que el sistema operativo
+      await page.keyboard.down('Escape'); // cierra el diálogo
+      await waitClosed(page);
+      for (let i = 0; i < 4; i++) await page.keyboard.down('Escape'); // repeticiones: ya con el diálogo cerrado
+      await page.waitForTimeout(150);
+      assert((await getSlice(page, 'selection')).items.length === 1, 'las repeticiones de Esc no deben limpiar la selección');
+      await page.keyboard.up('Escape');
+      await page.waitForTimeout(100);
+      assert((await getSlice(page, 'selection')).items.length === 1, 'soltar Esc tampoco');
+
+      // Una pulsación nueva vuelve a funcionar con normalidad: limpia la selección
+      await page.keyboard.press('Escape');
+      await waitFor(async () => (await getSlice(page, 'selection')).items.length === 0, { timeout: 3000, label: 'Esc nuevo limpia la selección' });
+
+      // Y la repetición no se "queda pegada": tras soltar, abrir y cerrar de nuevo con una pulsación normal sigue sin tocar la selección
+      await page.evaluate(() => {
+        const m = window.__visor.ifc.getModels()[0];
+        window.__visor.actions.select([{ modelId: m.id, expressId: m.table.expressIds[0] }]);
+      });
+      await openAbout(page);
+      await page.keyboard.press('Escape');
+      await waitClosed(page);
+      assert((await getSlice(page, 'selection')).items.length === 1, 'una pulsación normal de Esc solo cierra el diálogo');
+      await page.keyboard.press('Escape');
+      await waitFor(async () => (await getSlice(page, 'selection')).items.length === 0, { timeout: 3000, label: 'Esc con el diálogo cerrado limpia la selección' });
+    });
+
     // ------------------------------------------------------------------ diseño
     await test('diseño: se desplaza si no cabe, no desborda y funciona a 900 px y en móvil', async () => {
       for (const [w, hgt, name] of [[1600, 900, '02-1600'], [900, 700, '03-900'], [390, 800, '04-movil']]) {
@@ -493,6 +545,9 @@ async function run() {
           tel: ['+51 (999) 111-222', '12', '999 111 222', ''].map(m.hrefTelefono),
           mail: ['a@b.co', 'a b@c.co', 'a@b', '"x"@b.co'].map(m.hrefCorreo),
           norm: m.normalizarAcerca({ autor: { nombre: '   ' }, aplicacion: { anio: 'x', hojaDeRuta: 'no' } }),
+          tipos: m.normalizarAcerca({ aplicacion: { fase: { a: 1 }, descripcion: null, hojaDeRuta: { a: 1 } } }).aplicacion,
+          textoVacio: m.normalizarAcerca({ aplicacion: { fase: '', descripcion: '  ', hojaDeRuta: [] } }).aplicacion,
+          nulo: m.normalizarAcerca({ aplicacion: { hojaDeRuta: null } }).aplicacion.hojaDeRuta.length,
           vacio: m.normalizarAcerca(null),
         };
       });
@@ -500,7 +555,10 @@ async function run() {
       assert(JSON.stringify(r.web) === JSON.stringify(['https://ejemplo.com/a', 'https://www.ejemplo.com/', null, null, null, null, null]), `hrefWeb: ${JSON.stringify(r.web)}`);
       assert(JSON.stringify(r.tel) === JSON.stringify(['tel:+51999111222', null, 'tel:999111222', null]), `hrefTelefono: ${JSON.stringify(r.tel)}`);
       assert(JSON.stringify(r.mail) === JSON.stringify(['mailto:a@b.co', null, null, null]), `hrefCorreo: ${JSON.stringify(r.mail)}`);
-      assert(r.norm.autor.nombre === 'David Henry Bernilla Rodriguez' && r.norm.aplicacion.anio === 2026 && r.norm.aplicacion.hojaDeRuta.length === 0, `normalización: ${JSON.stringify(r.norm)}`);
+      assert(r.norm.autor.nombre === 'David Henry Bernilla Rodriguez' && r.norm.aplicacion.anio === 2026 && r.norm.aplicacion.hojaDeRuta.length === 3, `normalización: ${JSON.stringify(r.norm)}`);
+      assert(r.tipos.fase.startsWith('Fase 1') && r.tipos.descripcion.includes('seguimiento 5D') && r.tipos.hojaDeRuta.length === 3, `un campo que no es del tipo esperado toma su valor por defecto: ${JSON.stringify(r.tipos)}`);
+      assert(r.nulo === 3, 'hojaDeRuta null (no es una lista) -> valores por defecto');
+      assert(r.textoVacio.fase === '' && r.textoVacio.descripcion === '' && r.textoVacio.hojaDeRuta.length === 0, `un texto vacío o una lista vacía ocultan la sección: ${JSON.stringify(r.textoVacio)}`);
       assert(r.vacio.autor.nombre === 'David Henry Bernilla Rodriguez' && r.vacio.aplicacion.hojaDeRuta.length === 3, 'null -> valores por defecto');
     });
 
@@ -517,14 +575,25 @@ async function run() {
       assert(!(await page.locator(DIALOG).innerText()).toLowerCase().includes('github'), `${label}: sin GitHub`);
     };
 
-    await test('acerca.json ausente (404): usa los valores por defecto sin romperse', async () => {
+    await test('acerca.json ausente (404): usa los valores por defecto, sin romperse y sin volver a pedirlo en cada apertura', async () => {
       const h = await openWithAcerca(browser, server.url, (route) => route.fulfill({ status: 404, contentType: 'text/plain', body: 'No encontrado' }));
       handles.push({ ...h, name: 'json-404' });
+      await waitFor(() => h.peticiones() >= 1, { timeout: 3000, label: 'la precarga de acerca.json' });
       await DEFAULTS_OK(h.page, '404');
       await shot(h.page, '06-json-ausente');
-      // El 404 del propio archivo es lo único que el navegador registra como error de consola
-      const other = h.errors.filter((e) => !/Failed to load resource/.test(e));
-      assert(other.length === 0, `errores de consola: ${other.join(' | ')}`);
+      await h.page.keyboard.press('Escape');
+      await waitClosed(h.page);
+      await h.page.waitForTimeout(250);
+      await openAbout(h.page);
+      await h.page.keyboard.press('Escape');
+      await waitClosed(h.page);
+      await h.page.waitForTimeout(250);
+      await DEFAULTS_OK(h.page, '404 (tercera apertura)');
+      // Un archivo que no existe se pide una sola vez por carga de página: abrir el diálogo no repite el 404 (ni el error de consola)
+      assert(h.peticiones() === 1, `acerca.json ausente: se pidió ${h.peticiones()} veces, debe ser 1`);
+      // El 404 del propio archivo es lo único que el navegador registra como error de consola, y una sola vez
+      assert(h.erroresDelArchivo().length <= 1, `errores del 404 repetidos: ${h.erroresDelArchivo().join(' | ')}`);
+      assert(h.otrosErrores().length === 0, `errores de consola: ${h.otrosErrores().join(' | ')}`);
       h.errors.length = 0;
       await h.context.close();
     });
@@ -534,9 +603,33 @@ async function run() {
         const h = await openWithAcerca(browser, server.url, (route) => route.fulfill({ status: 200, contentType: 'application/json', body: cuerpo }));
         handles.push({ ...h, name: `json-${nombre}` });
         await DEFAULTS_OK(h.page, nombre);
+        // Un JSON mal escrito (sin error de red) sí se vuelve a leer al abrir: quien lo está editando verá la corrección
+        const antes = h.peticiones();
+        await h.page.keyboard.press('Escape');
+        await waitClosed(h.page);
+        await h.page.waitForTimeout(250);
+        await openAbout(h.page);
+        assert(h.peticiones() > antes, `${nombre}: debe volver a leerse al abrir (${antes} -> ${h.peticiones()})`);
+        assert(h.errors.length === 0, `${nombre}: errores de consola: ${h.errors.join(' | ')}`);
         await h.context.close();
       });
     }
+
+    await test('acerca.json con campos del tipo equivocado: cada uno toma su valor por defecto (no se oculta la sección)', async () => {
+      const raro = { autor: { nombre: 'Ana Pérez', titulo: 'Arq.', correo: 'ana@example.com' }, aplicacion: { fase: { a: 1 }, descripcion: null, anio: 99999, hojaDeRuta: { a: 1 } } };
+      const h = await openWithAcerca(browser, server.url, (route) => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(raro) }));
+      handles.push({ ...h, name: 'json-tipos' });
+      await openAbout(h.page);
+      assert((await h.page.locator('.about__name').textContent()) === 'Ana Pérez', 'el autor del archivo se respeta');
+      assert((await h.page.locator('.about__phase').textContent()).startsWith('Fase 1'), 'fase que no es texto -> por defecto');
+      assert((await h.page.locator('.about__desc').textContent()).includes('seguimiento 5D'), 'descripción null -> por defecto');
+      const road = await h.page.locator('.about__road-item').allTextContents();
+      assert(road.length === 3 && road[0].startsWith('Fase 2'), `una hoja de ruta que no es una lista -> por defecto: ${road}`);
+      assert((await h.page.locator('.about__foot').textContent()) === '© 2026 Arq. Ana Pérez', 'año fuera de rango -> por defecto');
+      await h.page.keyboard.press('Escape');
+      await waitClosed(h.page);
+      await h.context.close();
+    });
 
     await test('acerca.json personalizado: muestra las filas opcionales solo con enlaces seguros y se vuelve a leer al abrir', async () => {
       const custom = {
