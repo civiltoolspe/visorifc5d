@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sandbox de sincronización</title>
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "/vendor/three/build/three.module.js",
+        "three/addons/": "/vendor/three/examples/jsm/",
+        "three-mesh-bvh": "/vendor/three-mesh-bvh/src/index.js",
+        "camera-controls": "/vendor/camera-controls/dist/camera-controls.module.js",
+        "web-ifc": "/vendor/web-ifc/web-ifc-api.js"
+      }
+    }
+  </script>
+  <style>
+    html, body { margin: 0; height: 100%; font-family: system-ui, sans-serif; background: #e9e9e8; overflow: hidden; }
+    #viewport { position: absolute; left: 0; top: 0; background: #ddd; }
+    #hud { position: absolute; right: 8px; bottom: 8px; background: rgba(255,255,255,.92); padding: 8px 12px;
+      border-radius: 12px; font-size: 12px; white-space: pre; box-shadow: 0 2px 8px rgba(0,0,0,.15); }
+  </style>
+</head>
+<body>
+  <div id="viewport"></div>
+  <div id="hud">cargando…</div>
+  <script type="module" src="/dev/sync-sandbox.js"></script>
+</body>
+</html>

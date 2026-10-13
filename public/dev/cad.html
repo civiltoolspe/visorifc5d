@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sandbox CAD (DXF/DWG)</title>
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "/vendor/three/build/three.module.js",
+        "three/addons/": "/vendor/three/examples/jsm/"
+      }
+    }
+  </script>
+  <style>
+    html, body { margin: 0; height: 100%; font-family: system-ui, sans-serif; background: #ececeb; color: #222; }
+    #viewport { position: absolute; inset: 0; }
+    #hud {
+      position: absolute; left: 12px; top: 12px; z-index: 5; width: 260px; max-height: calc(100% - 24px);
+      overflow: auto; background: #fff; border-radius: 16px; padding: 12px 14px;
+      box-shadow: 0 4px 18px rgba(0, 0, 0, .15); font-size: 13px;
+    }
+    #hud h1 { font-size: 15px; margin: 0 0 8px; font-weight: 600; }
+    #hud button, #hud select, #hud input[type=number] {
+      font: inherit; padding: 3px 9px; border: 0; border-radius: 999px; background: #f0f0ef; cursor: pointer;
+    }
+    #hud button:hover { background: #ffc21a; }
+    #hud .row { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; margin: 6px 0; }
+    #hud label.layer { display: flex; align-items: center; gap: 6px; padding: 2px 0; }
+    #hud .swatch { width: 12px; height: 12px; border-radius: 3px; border: 1px solid #0003; }
+    #log { margin-top: 8px; font-size: 11px; color: #666; white-space: pre-wrap; }
+  </style>
+</head>
+<body>
+  <div id="viewport"></div>
+  <div id="hud">
+    <h1>Sandbox CAD</h1>
+    <div class="row">
+      <button data-load="/fixtures/planta_georef.dxf">planta_georef.dxf</button>
+      <button data-load="/fixtures/downloads/example_2018.dwg">example_2018.dwg</button>
+      <button data-load="/fixtures/downloads/example_2000.dxf">example_2000.dxf</button>
+    </div>
+    <div class="row"><input type="file" id="file" accept=".dxf,.dwg"></div>
+    <div class="row">
+      Unidades
+      <select id="units"><option>auto</option><option>mm</option><option>cm</option><option>m</option><option>in</option><option>ft</option></select>
+    </div>
+    <div class="row">
+      Cota IFC (prueba)
+      <input type="number" id="ifcElev" step="0.5" placeholder="sin IFC" style="width:80px">
+    </div>
+    <div class="row">
+      Cota manual
+      <input type="number" id="manualElev" step="0.5" placeholder="auto" style="width:80px">
+    </div>
+    <div id="layers"></div>
+    <div id="log"></div>
+  </div>
+  <script type="module" src="/dev/cad-sandbox.js"></script>
+</body>
+</html>

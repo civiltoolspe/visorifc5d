@@ -1,0 +1,576 @@
+/* Visor IFC 5D - diálogo "Acerca de" (public/js/ui/AboutDialog.js).
+   Misma línea que el resto de la app (docs/referencia.webp): tarjeta blanca muy redondeada con sombra suave,
+   Urbanist fina, acentos amarillo / naranja y píldoras negras. Va por encima de la capa de bloqueo (--z-about). */
+
+.about-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: var(--z-about);
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgba(27, 20, 14, 0.42);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  opacity: 0;
+  transition: opacity var(--t) var(--ease);
+  pointer-events: auto;
+}
+
+.about-backdrop.is-in {
+  opacity: 1;
+}
+
+.about {
+  display: flex;
+  flex-direction: column;
+  width: min(780px, 100%);
+  max-height: 86vh;
+  border-radius: 32px;
+  background: var(--card);
+  box-shadow: var(--shadow-pop);
+  overflow: hidden;
+  outline: none;
+  transform: translateY(12px) scale(0.98);
+  transition: transform var(--t-slow) var(--ease);
+}
+
+.about-backdrop.is-in .about {
+  transform: none;
+}
+
+/* ------------------------------------------------------------ Cabecera */
+.about__head {
+  display: flex;
+  flex: none;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 24px 22px 18px 28px;
+}
+
+.about__logo {
+  flex: none;
+  margin-top: 2px;
+  line-height: 0;
+  border-radius: 17px;
+  box-shadow: 0 12px 22px -10px rgba(255, 170, 0, 0.75);
+}
+
+.about__heading {
+  flex: 1;
+  min-width: 0;
+}
+
+.about__title {
+  margin: 0;
+  font-size: 30px;
+  font-weight: 300;
+  letter-spacing: -0.015em;
+  line-height: 1.1;
+}
+
+.about__eyebrow {
+  display: block;
+  margin-bottom: 3px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+
+.about__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+  margin-top: 9px;
+}
+
+.about__phase {
+  margin: 0;
+  font-size: 13px;
+  color: var(--ink-2);
+  line-height: 1.4;
+}
+
+.about__version {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  min-height: 26px;
+  padding: 0 12px;
+  border-radius: var(--r-pill);
+  background: var(--card-soft);
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.about__close {
+  flex: none;
+  align-self: flex-start;
+  margin-top: -4px;
+}
+
+/* ------------------------------------------------------------ Cuerpo desplazable */
+.about__body {
+  flex: 1;
+  min-height: 0;
+  padding: 2px 28px 12px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  /* Sombras que aparecen arriba o abajo cuando hay más contenido por desplazar */
+  background:
+    linear-gradient(#fff 30%, rgba(255, 255, 255, 0)) center top / 100% 36px no-repeat local,
+    linear-gradient(rgba(255, 255, 255, 0), #fff 70%) center bottom / 100% 36px no-repeat local,
+    radial-gradient(farthest-side at 50% 0, rgba(27, 20, 14, 0.16), rgba(27, 20, 14, 0)) center top / 100% 12px no-repeat scroll,
+    radial-gradient(farthest-side at 50% 100%, rgba(27, 20, 14, 0.16), rgba(27, 20, 14, 0)) center bottom / 100% 12px no-repeat scroll;
+  background-color: #fff;
+}
+
+.about__h {
+  margin: 28px 0 12px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+
+/* ------------------------------------------------------------ Tarjeta del autor */
+.about__author {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 20px 24px;
+  padding: 24px;
+  border-radius: 26px;
+  background:
+    radial-gradient(120% 150% at 100% 0%, rgba(255, 106, 19, 0.13), transparent 55%),
+    linear-gradient(135deg, var(--accent-soft) 0%, var(--card-soft) 62%);
+}
+
+.about__avatar {
+  display: grid;
+  place-items: center;
+  width: 92px;
+  height: 92px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--ink);
+  font-size: 34px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  box-shadow: 0 16px 30px -12px rgba(255, 150, 0, 0.8), inset 0 0 0 5px rgba(255, 255, 255, 0.5);
+  user-select: none;
+}
+
+.about__who {
+  min-width: 0;
+}
+
+.about__degree {
+  display: inline-flex;
+  align-items: center;
+  min-height: 26px;
+  padding: 0 13px;
+  border-radius: var(--r-pill);
+  background: var(--ink);
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+}
+
+.about__name {
+  margin: 10px 0 6px;
+  font-size: clamp(24px, 4.2vw, 34px);
+  font-weight: 300;
+  letter-spacing: -0.015em;
+  line-height: 1.12;
+  overflow-wrap: anywhere;
+}
+
+.about__profession {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.about__role {
+  margin: 3px 0 0;
+  font-size: 13px;
+  color: var(--ink-2);
+  line-height: 1.45;
+}
+
+.about__contacts {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.about__contact {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  padding: 9px 8px 9px 11px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.86);
+}
+
+.about__contact-icon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  color: var(--ink);
+}
+
+.about__contact-text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+
+.about__contact-label {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+
+.about__contact-value {
+  font-weight: 500;
+}
+
+.about__link {
+  color: var(--ink);
+  font-weight: 500;
+  text-decoration: underline;
+  text-decoration-color: var(--accent-2);
+  text-decoration-thickness: 1.5px;
+  text-decoration-skip-ink: none;
+  text-underline-offset: 3px;
+  transition: color var(--t-fast) var(--ease);
+}
+
+.about__link:hover {
+  color: #c4500a;
+}
+
+.about__link-ext {
+  margin-left: 5px;
+  vertical-align: -1px;
+  color: var(--ink-2);
+}
+
+.about__copy.is-done {
+  background: #e4f6ea;
+  color: #1f7a3f;
+}
+
+/* ------------------------------------------------------------ Aplicación y red */
+.about__desc {
+  margin: 0;
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: #3a3a3a;
+}
+
+.about__net {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 12px 18px;
+  margin: 16px 0 0;
+  padding: 14px 16px;
+  border-radius: 20px;
+  background: var(--card-soft);
+  font-size: 13px;
+}
+
+.about__net-k {
+  color: var(--ink-2);
+}
+
+.about__net-v {
+  margin: 0;
+  min-width: 0;
+}
+
+.about__role-badge {
+  min-height: 24px;
+  padding: 0 12px;
+  font-size: 12px;
+}
+
+.about__role-badge--presenter {
+  background: var(--ink);
+  color: var(--accent);
+}
+
+.about__role-badge--viewer {
+  background: var(--accent-2-soft);
+  color: #b3470a;
+}
+
+.about__urls {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.about__url {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 4px 3px 12px;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.about__url-text {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  user-select: all;
+}
+
+.about__muted {
+  color: var(--ink-2);
+}
+
+/* ------------------------------------------------------------ Hoja de ruta */
+.about__road {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.about__road-item {
+  position: relative;
+  padding: 0 0 14px 30px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.about__road-item:last-child {
+  padding-bottom: 0;
+}
+
+.about__road-item::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 4px;
+  width: 14px;
+  height: 14px;
+  box-sizing: border-box;
+  border: 3px solid var(--accent-2);
+  border-radius: 50%;
+  background: #fff;
+}
+
+.about__road-item:first-child::before {
+  background: var(--accent-2);
+  box-shadow: 0 0 0 4px var(--accent-2-soft);
+}
+
+.about__road-item:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  left: 6px;
+  top: 21px;
+  bottom: 3px;
+  width: 2px;
+  border-radius: 2px;
+  background: linear-gradient(180deg, var(--accent-2), rgba(255, 106, 19, 0.15));
+}
+
+/* ------------------------------------------------------------ Tecnologías y licencias */
+.about__tech {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.about__tech-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-width: 0;
+  padding: 11px 12px 11px 15px;
+  border-radius: 16px;
+  background: var(--card-soft);
+}
+
+.about__tech-main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.about__tech-name {
+  font-size: 13.5px;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+
+.about__tech-use {
+  font-size: 12px;
+  color: var(--ink-2);
+}
+
+.about__tech-license {
+  flex: none;
+}
+
+.about__tech-item .badge--plain {
+  background: #fff;
+}
+
+.about__note {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  margin: 10px 0 0;
+  padding: 11px 14px;
+  border-radius: 16px;
+  background: var(--accent-2-soft);
+  color: #7a3a10;
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+
+.about__note .icon {
+  flex: none;
+  margin-top: 1px;
+  color: var(--accent-2);
+}
+
+/* ------------------------------------------------------------ Pie */
+.about__foot {
+  flex: none;
+  margin-top: 8px;
+  padding: 14px 28px 18px;
+  border-top: 1px solid var(--line);
+  color: var(--ink-2);
+  font-size: 12.5px;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.about__sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* ------------------------------------------------------------ Pantallas estrechas */
+@media (max-width: 900px) {
+  .about {
+    width: min(720px, 100%);
+  }
+}
+
+@media (max-width: 640px) {
+  .about-backdrop {
+    padding: 10px;
+  }
+
+  .about {
+    border-radius: 26px;
+  }
+
+  .about__head {
+    gap: 12px;
+    padding: 18px 14px 14px 18px;
+  }
+
+  .about__logo svg {
+    width: 44px;
+    height: 44px;
+  }
+
+  .about__title {
+    font-size: 24px;
+  }
+
+  .about__body {
+    padding: 0 18px 4px;
+  }
+
+  .about__author {
+    gap: 16px;
+    padding: 18px;
+    border-radius: 22px;
+  }
+
+  .about__avatar {
+    width: 68px;
+    height: 68px;
+    font-size: 25px;
+  }
+
+  .about__tech {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .about__foot {
+    padding: 12px 18px 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .about__net {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 4px;
+  }
+
+  .about__net-v + .about__net-k {
+    margin-top: 8px;
+  }
+
+  .about__contacts {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

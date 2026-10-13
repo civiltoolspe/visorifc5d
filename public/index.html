@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Visor IFC 5D</title>
+  <meta name="description" content="Visor IFC 5D: modelos IFC, planos DXF/DWG georreferenciados y modo presentación en red local.">
+  <meta name="theme-color" content="#ECECEC">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+
+  <!-- Tipografía Urbanist (servida localmente; la LAN puede no tener internet) -->
+  <link rel="stylesheet" href="/vendor/fonts/urbanist/300.css">
+  <link rel="stylesheet" href="/vendor/fonts/urbanist/400.css">
+  <link rel="stylesheet" href="/vendor/fonts/urbanist/500.css">
+  <link rel="stylesheet" href="/vendor/fonts/urbanist/600.css">
+
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/layout.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/sidebar.css">
+  <link rel="stylesheet" href="/css/hud.css">
+  <link rel="stylesheet" href="/css/about.css">
+
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "/vendor/three/build/three.module.js",
+        "three/addons/": "/vendor/three/examples/jsm/",
+        "three-mesh-bvh": "/vendor/three-mesh-bvh/src/index.js",
+        "camera-controls": "/vendor/camera-controls/dist/camera-controls.module.js",
+        "web-ifc": "/vendor/web-ifc/web-ifc-api.js"
+      }
+    }
+  </script>
+</head>
+<body>
+  <!-- El visor 3D ocupa toda la ventana; los paneles flotan encima -->
+  <div id="viewport" aria-label="Visor 3D"></div>
+  <!-- Paneles flotantes (los monta public/js/ui/App.js) -->
+  <div id="ui-root"></div>
+  <div id="fatal-error" role="alert" hidden></div>
+  <noscript><p class="noscript">Este visor necesita JavaScript para funcionar.</p></noscript>
+  <script type="module" src="/js/main.js"></script>
+</body>
+</html>

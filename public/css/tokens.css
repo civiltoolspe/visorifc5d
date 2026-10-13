@@ -1,0 +1,225 @@
+/* Visor IFC 5D - tokens de diseño y base tipográfica.
+   Referencia: docs/referencia.webp (tarjetas blancas muy redondeadas, cifras finas,
+   acentos amarillo/naranja, píldora activa negra, dock "vidrio" marrón a naranja). */
+
+:root {
+  color-scheme: light;
+
+  /* Superficies */
+  --bg-app: #ececec;
+  --bg-app-2: #f2f2f1;
+  --card: #ffffff;
+  --card-soft: #f6f6f5;
+  --card-glass: rgba(255, 255, 255, 0.78);
+  --card-glass-strong: rgba(255, 255, 255, 0.92);
+  --dark: #1e1e1e;
+  --dark-2: #2a2a2a;
+
+  /* Texto */
+  --ink: #1b1b1b;
+  --ink-2: #8c8c8c;
+  --ink-3: #bdbdbd;
+  --ink-inv: #ffffff;
+  --ink-inv-2: rgba(255, 255, 255, 0.62);
+  --ink-inv-3: rgba(255, 255, 255, 0.38);
+
+  /* Acentos */
+  --accent: #ffc21a;
+  --accent-soft: #fff1c4;
+  --accent-2: #ff6a13;
+  --accent-2-soft: #ffe3d2;
+  --ok: #3fbf6a;
+  --warn: #ffc21a;
+  --danger: #e5412b;
+
+  /* Líneas */
+  --line: rgba(27, 27, 27, 0.08);
+  --line-strong: rgba(27, 27, 27, 0.16);
+
+  /* Dock "vidrio" marrón a naranja */
+  --dock-top: rgba(74, 58, 46, 0.92);
+  --dock-mid: rgba(96, 66, 44, 0.9);
+  --dock-bottom: #f07a1a;
+  --glow-orange: rgba(255, 106, 19, 0.62);
+  --glow-yellow: rgba(255, 194, 26, 0.24);
+
+  /* Geometría */
+  --r-card: 24px;
+  --r-card-sm: 18px;
+  --r-btn: 14px;
+  --r-pill: 999px;
+  --pad: 20px;
+  --gap: 14px;
+  --sidebar-w: 372px;
+  --toolbar-w: 324px;
+  --dock-h: 192px;
+  --dock-h-closed: 30px;
+
+  /* Sombras suaves y grandes */
+  --shadow-card: 0 28px 64px -22px rgba(48, 36, 26, 0.34), 0 8px 22px -10px rgba(48, 36, 26, 0.14);
+  --shadow-sm: 0 10px 24px -12px rgba(48, 36, 26, 0.3), 0 2px 6px -2px rgba(48, 36, 26, 0.1);
+  --shadow-pop: 0 30px 70px -20px rgba(30, 22, 14, 0.42), 0 10px 26px -12px rgba(30, 22, 14, 0.22);
+
+  /* Movimiento */
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --t-fast: 140ms;
+  --t: 240ms;
+  --t-slow: 420ms;
+
+  /* Tipografía */
+  --font: 'Urbanist', 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif;
+
+  /* Capas (z-index) */
+  --z-viewport: 0;
+  --z-glow: 4;
+  --z-ui: 10;
+  --z-panel: 20;
+  --z-popover: 40;
+  --z-modal: 60;
+  --z-toast: 70;
+  --z-drop: 80;
+  --z-lock: 90;
+  --z-status: 95;
+  --z-about: 100; /* "Acerca de": por encima de la capa de bloqueo y del estado */
+}
+
+@media (max-height: 780px) {
+  :root {
+    --dock-h: 156px;
+  }
+}
+
+@media (min-width: 1700px) {
+  :root {
+    --sidebar-w: 392px;
+  }
+}
+
+@media (max-width: 1100px) {
+  :root {
+    --sidebar-w: 340px;
+    --toolbar-w: 300px;
+    --pad: 14px;
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(180deg, var(--bg-app-2) 0%, var(--bg-app) 100%);
+  color: var(--ink);
+  font-family: var(--font);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.35;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent-2);
+  outline-offset: 2px;
+}
+
+/* Barras de desplazamiento finas */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(27, 27, 27, 0.2) transparent;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(27, 27, 27, 0.18);
+  border-radius: 8px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(27, 27, 27, 0.32);
+  background-clip: padding-box;
+  border: 2px solid transparent;
+}
+
+::selection {
+  background: var(--accent);
+  color: var(--ink);
+}
+
+.noscript {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  margin: 0;
+  background: var(--bg-app);
+}
+
+#fatal-error {
+  position: fixed;
+  left: 50%;
+  top: 24px;
+  transform: translateX(-50%);
+  z-index: 200;
+  max-width: min(640px, calc(100vw - 32px));
+  padding: 14px 20px;
+  border-radius: var(--r-card-sm);
+  background: var(--dark);
+  color: #fff;
+  box-shadow: var(--shadow-pop);
+  font-size: 14px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --t-fast: 0ms;
+    --t: 0ms;
+    --t-slow: 0ms;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
